@@ -21,8 +21,18 @@ exports.Stripe = {
     connect: (code) => __awaiter(void 0, void 0, void 0, function* () {
         const response = yield client.oauth.token({
             /* eslint-disable @typescript-eslint/camelcase */
-            grant_type: 'authorization_code',
+            grant_type: "authorization_code",
             code,
+            /* eslint-enable @typescript-eslint/camelcase */
+        });
+        return response;
+    }),
+    disconnect: (stripeUserId) => __awaiter(void 0, void 0, void 0, function* () {
+        // @ts-ignore
+        const response = yield client.oauth.deauthorize({
+            /* eslint-disable @typescript-eslint/camelcase */
+            client_id: `${process.env.S_CLIENT_ID}`,
+            stripe_user_id: stripeUserId,
             /* eslint-enable @typescript-eslint/camelcase */
         });
         return response;
@@ -31,15 +41,15 @@ exports.Stripe = {
         /* eslint-disable @typescript-eslint/camelcase */
         const res = yield client.charges.create({
             amount,
-            currency: 'usd',
+            currency: "usd",
             source,
-            application_fee_amount: Math.round(amount * 0.05)
+            application_fee_amount: Math.round(amount * 0.05),
         }, {
-            stripe_account: stripeAccount
+            stripeAccount,
         });
-        /* eslint-disable @typescript-eslint/camelcase */
+        /* eslint-enable @typescript-eslint/camelcase */
         if (res.status !== "succeeded") {
-            throw new Error("Failed to crate charge with Stripe");
+            throw new Error("failed to create charge with Stripe");
         }
-    })
+    }),
 };
