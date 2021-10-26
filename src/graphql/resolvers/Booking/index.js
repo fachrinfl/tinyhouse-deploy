@@ -13,6 +13,7 @@ exports.bookingResolvers = void 0;
 const mongodb_1 = require("mongodb");
 const api_1 = require("../../../lib/api");
 const utils_1 = require("../../../lib/utils");
+const milisecondsPerDay = 86400000;
 const resolveBookingsIndex = (bookingsIndex, checkInDate, checkOutDate) => {
     let dateCursor = new Date(checkInDate);
     let checkOut = new Date(checkOutDate);
@@ -55,13 +56,20 @@ exports.bookingResolvers = {
                 if (listing.host === viewer._id) {
                     throw new Error("viewer can't book own listing");
                 }
+                const today = new Date();
                 const checkInDate = new Date(checkIn);
                 const checkOutDate = new Date(checkOut);
+                if (checkInDate.getTime() > today.getTime() + 90 * milisecondsPerDay) {
+                    throw new Error("check in date can't be more than 90 days from today");
+                }
+                if (checkOutDate.getTime() > today.getTime() + 90 * milisecondsPerDay) {
+                    throw new Error("check out date can't be more than 90 days from today");
+                }
                 if (checkOutDate < checkInDate) {
                     throw new Error("check out date can't be before check in date");
                 }
                 const bookingsIndex = resolveBookingsIndex(listing.bookingsIndex, checkIn, checkOut);
-                const totalPrice = listing.price * ((checkOutDate.getTime() - checkInDate.getTime()) / 86400000 + 1);
+                const totalPrice = listing.price * ((checkOutDate.getTime() - checkInDate.getTime()) / milisecondsPerDay + 1);
                 const host = yield db.users.findOne({
                     _id: listing.host
                 });
